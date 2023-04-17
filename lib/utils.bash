@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-# TODO: Ensure this is the correct GitHub homepage where releases can be downloaded for flatc.
 GH_REPO="https://github.com/google/flatbuffers"
 TOOL_NAME="flatc"
 TOOL_TEST="flatc --version"
@@ -31,17 +30,24 @@ list_github_tags() {
 }
 
 list_all_versions() {
-	# TODO: Adapt this. By default we simply list the tag names from GitHub releases.
-	# Change this function if flatc has other means of determining installable versions.
 	list_github_tags
+}
+
+get_platform() {
+  local os=$(uname)
+  if [[ "${os}" == "Darwin" ]]; then
+    echo "osx"
+  elif [[ "${os}" == "Linux" ]]; then
+    echo "linux"
+  else
+    >&2 echo "unsupported os: ${os}" && exit 1
+  fi
 }
 
 download_release() {
 	local version filename url
 	version="$1"
 	filename="$2"
-
-	# TODO: Adapt the release URL convention for flatc
 	url="$GH_REPO/archive/v${version}.tar.gz"
 
 	echo "* Downloading $TOOL_NAME release $version..."
@@ -58,10 +64,14 @@ install_version() {
 	fi
 
 	(
-		mkdir -p "$install_path"
-		cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
 
-		# TODO: Assert flatc executable exists.
+    cd $ASDF_DOWNLOAD_PATH
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+    make
+		mkdir -p "$install_path"
+		cp "./flatc" "$install_path"
+
+		# Assert flatc executable exists.
 		local tool_cmd
 		tool_cmd="$(echo "$TOOL_TEST" | cut -d' ' -f1)"
 		test -x "$install_path/$tool_cmd" || fail "Expected $install_path/$tool_cmd to be executable."

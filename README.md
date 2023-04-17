@@ -2,8 +2,7 @@
 
 # asdf-flatc [![Build](https://github.com/TheOpenDictionary/asdf-flatc/actions/workflows/build.yml/badge.svg)](https://github.com/TheOpenDictionary/asdf-flatc/actions/workflows/build.yml) [![Lint](https://github.com/TheOpenDictionary/asdf-flatc/actions/workflows/lint.yml/badge.svg)](https://github.com/TheOpenDictionary/asdf-flatc/actions/workflows/lint.yml)
 
-
-[flatc](https://flatbuffers.dev) plugin for the [asdf version manager](https://asdf-vm.com).
+[Flatbuffers](https://flatbuffers.dev) `flatc` plugin for the [asdf version manager](https://asdf-vm.com).
 
 </div>
 

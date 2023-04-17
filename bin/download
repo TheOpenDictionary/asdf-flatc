@@ -15,4 +15,11 @@ release_file="$ASDF_DOWNLOAD_PATH/$TOOL_NAME-$ASDF_INSTALL_VERSION.zip"
 download_release "$ASDF_INSTALL_VERSION" "$release_file"
 
 #  Extract contents of tar.gz file into the download directory
-(unzip -qo -d "$ASDF_DOWNLOAD_PATH" "$release_file" && f=("$ASDF_DOWNLOAD_PATH"/*) && mv "$ASDF_DOWNLOAD_PATH"/*/* "$ASDF_DOWNLOAD_PATH" && rm -rf "${f[@]}") || fail "Could not extract $release_file"
+unzip -qo -d "$ASDF_DOWNLOAD_PATH" "$release_file" || fail "Could not extract $release_file"
+
+f=("$ASDF_DOWNLOAD_PATH"/*)
+
+if [[ -d "${f[0]}" ]]; then
+	mv "$ASDF_DOWNLOAD_PATH"/*/* "$ASDF_DOWNLOAD_PATH"
+	rm -rf "${f[0]}"
+fi

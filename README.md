@@ -13,12 +13,18 @@
 - [Contributing](#contributing)
 - [License](#license)
 
+# About
+
+This is an asdf plugin for the [Flatbuffers](https://flatbuffers.dev) compiler by Google.
+
+On Intel & ARM Mac systems, as well as Linux, this plugin will attempt to install the precompiled binaries from Flatbuffers' GitHub releases. If this fails, it will build the compiler from source.
+
+Unlike most asdf plugins, this particular plugin downloads _zip archives_ from GitHub (not tarballs), and so `unzip` is required.
+
 # Dependencies
 
-**TODO: adapt this section**
-
-- `bash`, `curl`, `tar`: generic POSIX utilities.
-- `SOME_ENV_VAR`: set this environment variable in your shell config to load the correct version of tool x.
+- `bash`, `curl`, `unzip`: generic POSIX utilities.
+- `cmake`, `make`: used to build from source on unsupported systems
 
 # Install
 

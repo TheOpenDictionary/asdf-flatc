@@ -29,29 +29,49 @@ list_github_tags() {
 		sed 's/^v//' # NOTE: You might want to adapt this sed to remove non-version strings from tags
 }
 
-list_all_versions() {
-	list_github_tags
+get_download_name() {
+	local os arch
+
+	os=$(uname)
+	arch=$(uname -m)
+
+	if [[ "${os}" == "Darwin" ]]; then
+		if [[ "${arch}" == "arm64" ]]; then
+			echo "Mac.flatc.binary"
+		else
+			echo "MacIntel.flatc.binary"
+		fi
+	elif [[ "${os}" == "Linux" ]]; then
+		echo "Linux.flatc.binary.g++-10"
+	else
+		echo "Unknown"
+	fi
 }
 
-get_platform() {
-  local os=$(uname)
-  if [[ "${os}" == "Darwin" ]]; then
-    echo "osx"
-  elif [[ "${os}" == "Linux" ]]; then
-    echo "linux"
-  else
-    >&2 echo "unsupported os: ${os}" && exit 1
-  fi
+list_all_versions() {
+	list_github_tags
 }
 
 download_release() {
 	local version filename url
 	version="$1"
 	filename="$2"
-	url="$GH_REPO/archive/v${version}.tar.gz"
+	download_name=$(get_download_name)
+	fallback_url="$GH_REPO/archive/v${version}.zip"
+	url="$GH_REPO/releases/download/v${version}/${download_name}.zip"
+
+	if [[ "${download_name}" == "Unknown" ]]; then
+		url=${fallback_url}
+	fi
 
 	echo "* Downloading $TOOL_NAME release $version..."
-	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+
+	if ! curl "${curl_opts[@]}" -o "$filename" -C - "$url"; then
+		echo "Failed to download a pre-built binary. Going to try building from source..."
+		if ! curl "${curl_opts[@]}" -o "$filename" -C - "$fallback_url"; then
+			fail "Could not source download from URL $fallback_url"
+		fi
+	fi
 }
 
 install_version() {
@@ -64,12 +84,15 @@ install_version() {
 	fi
 
 	(
-
-    cd $ASDF_DOWNLOAD_PATH
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
-    make
-		mkdir -p "$install_path"
-		cp "./flatc" "$install_path"
+		if [[ ! -e "${ASDF_DOWNLOAD_PATH}/flatc" ]]; then
+			cd "$ASDF_DOWNLOAD_PATH"
+			cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+			make
+			mkdir -p "$install_path"
+			cp "./flatc" "$install_path"
+		else
+			cp -r "${ASDF_DOWNLOAD_PATH}" "$install_path"
+		fi
 
 		# Assert flatc executable exists.
 		local tool_cmd
